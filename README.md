@@ -1,0 +1,29 @@
+# Meal Planner
+
+This is a meal planner that will suggest some meals following a plant-based diet so you can batch cook for the week for utmost win.
+
+## How it works
+
+This project mixes main components and a style to createa meal, and gives you how much to put in to get in the neighborhood of solid nutrition. The basic formula is:
+
+base + filling (protein) + style
+
+for example:
+
+rice + lentils + Mexican style
+
+Might suggest that the rice have tomato sauce and spices added, maybe get some chipotle in there, add some vegetables like green peppers, for example, that sort of thing.
+
+### Rules
+
+Meals follow the following rules:
+
+* A meal is ~400 calories (400, 3x day is 1200, which covers basic nutrients, on top of which you can snack or drink beer or whatever)
+* A meal can be less than 400, but no lower than 350
+* A meal can be more than 400, but no more than 450
+* 200-300 calories from a grain, with the rest filled in by a protein
+* Inputs are in logical measurements, ex 1/2 cup, not 0.7348 measurements. This is why there are boundaries.
+
+### Inputs
+
+Inputs are stored in a CSV with their name, category (base), calorie values, and quantity (ex. 1, cup).
