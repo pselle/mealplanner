@@ -6,7 +6,7 @@ This is a meal planner that will suggest some meals following a plant-based diet
 
 This project mixes main components and a style to createa meal, and gives you how much to put in to get in the neighborhood of solid nutrition. The basic formula is:
 
-base + filling (protein) + style
+base + filling (usually a protein) + style
 
 for example:
 
@@ -32,7 +32,7 @@ Plans consist of multiple meals, to the desired number of servings (ex. 10 servi
 
 ### Inputs
 
-Inputs are stored in a CSV with their name, category (base), calorie values, and quantity (ex. 1, cup).
+Inputs are stored in a CSV with their name, category (ex. base), calorie values, and quantity (ex. 1, cup), and the dry multiplier if relevant (empty if not).
 
 https://ndb.nal.usda.gov/ndb/search/list?fgcd=Cereal+Grains+and+Pasta&manu=&lfacet=&count=&max=25&ds=&sort=default&offset=0&format=&new=1
 
