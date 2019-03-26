@@ -34,9 +34,7 @@ Plans consist of multiple meals, to the desired number of servings (ex. 10 servi
 
 Inputs are stored in a CSV with their name, category (ex. base), calorie values, and quantity (ex. 1, cup), and the dry multiplier if relevant (empty if not).
 
-https://ndb.nal.usda.gov/ndb/search/list?fgcd=Cereal+Grains+and+Pasta&manu=&lfacet=&count=&max=25&ds=&sort=default&offset=0&format=&new=1
-
-https://ndb.nal.usda.gov/ndb/search/list?fgcd=Legumes+and+Legume+Products&manu=&lfacet=&count=&max=25&ds=&sort=default&offset=0&format=&new=1
+Data sources are generally USDA based, although when there's a discrepency between that and the general Google response, I pick the Google response.
 
 ### Sample output
 
