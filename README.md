@@ -34,7 +34,7 @@ Plans consist of multiple meals, to the desired number of servings (ex. 10 servi
 
 Inputs are stored in a CSV with their name, category (ex. base), calorie values, and quantity (ex. 1, cup), and the dry multiplier if relevant (empty if not).
 
-Data sources are generally USDA based, although when there's a discrepency between that and the general Google response, I pick the Google response.
+Data sources are generally USDA based, although when there's a discrepancy between that and the general Google response, I pick the Google response.
 
 ### Sample output
 
