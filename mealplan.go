@@ -11,6 +11,7 @@ import (
 	"strconv"
 )
 
+// Input is an input in a recipe (basically an ingredient)
 type Input struct {
 	name          string
 	category      string
@@ -27,33 +28,15 @@ type meal struct {
 }
 
 var mealCount int
-var inputs []Input
+var bases []Input
+var fillings []Input
 
 func init() {
 	flag.IntVar(&mealCount, "m", 10, "number of meals for the plan")
 	// load the data and stuff
-	inputFile, _ := os.Open("inputs.csv")
-	r := csv.NewReader(bufio.NewReader(inputFile))
-	for {
-		line, err := r.Read()
-		if err == io.EOF {
-			break
-		} else if err != nil {
-			log.Fatal(err)
-		}
-		calories, _ := strconv.Atoi(line[2])
-		quantity, _ := strconv.Atoi(line[3])
-		dryMultiplier, _ := strconv.ParseFloat(line[5], 32)
-		inputs = append(inputs, Input{
-			name:          line[0],
-			category:      line[1],
-			calories:      calories,
-			quantity:      quantity,
-			unit:          line[4],
-			dryMultiplier: float32(dryMultiplier),
-		})
-	}
-	// fmt.Println(inputs)
+	bases = loadData(bases, "data/bases.csv")
+	fillings = loadData(fillings, "data/fillings.csv")
+	// fmt.Println(fillings)
 }
 
 func main() {
@@ -65,5 +48,29 @@ func generateMeals() {
 	fmt.Println(fmt.Sprintf("gonna generate %d meals", mealCount))
 	var meals []meal
 	fmt.Println(meals)
-	//
+}
+
+func loadData(arr []Input, fileName string) []Input {
+	inputFile, _ := os.Open(fileName)
+	r := csv.NewReader(bufio.NewReader(inputFile))
+	for {
+		line, err := r.Read()
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			log.Fatal(err)
+		}
+		calories, _ := strconv.Atoi(line[2])
+		quantity, _ := strconv.Atoi(line[3])
+		dryMultiplier, _ := strconv.ParseFloat(line[5], 32)
+		arr = append(arr, Input{
+			name:          line[0],
+			category:      line[1],
+			calories:      calories,
+			quantity:      quantity,
+			unit:          line[4],
+			dryMultiplier: float32(dryMultiplier),
+		})
+	}
+	return arr
 }
