@@ -17,7 +17,7 @@ import (
 type Input struct {
 	name          string
 	category      string
-	calories      int
+	calories      float32
 	quantity      int
 	unit          string
 	dryMultiplier float32
@@ -56,16 +56,16 @@ func generateMeal(base Input, filling Input, multiplier float32, try int) (strin
 	if try == 0 {
 		return "STOP", 1
 	}
-	var mealCalories = float32(base.calories)*multiplier + float32(filling.calories)
+	var mealCalories = base.calories*multiplier + filling.calories
 	log.Print(mealCalories)
-	if float32(mealLowerBound) < mealCalories && float32(base.calories)*multiplier+float32(filling.calories) < float32(mealUpperBound) {
+	if float32(mealLowerBound) < mealCalories && mealCalories < float32(mealUpperBound) {
 		log.Print("Found meal")
 		return fmt.Sprintf(mealTitle, base.name, filling.name, styles[rand.Intn(len(styles))], 1), multiplier
 	}
-	if float32(base.calories)*multiplier+float32(filling.calories) < float32(mealUpperBound) {
+	if mealCalories < float32(mealUpperBound) {
 		return generateMeal(base, filling, multiplier+0.25, try-1)
 	}
-	if float32(mealLowerBound) < float32(base.calories)*multiplier+float32(filling.calories) {
+	if float32(mealLowerBound) < mealCalories {
 		log.Print("Decreasing base by 0.25")
 		log.Print(float32(base.calories)*multiplier + float32(filling.calories))
 		return generateMeal(base, filling, multiplier-0.25, try-1)
@@ -92,13 +92,13 @@ func loadData(arr []Input, fileName string) []Input {
 		} else if err != nil {
 			log.Fatal(err)
 		}
-		calories, _ := strconv.Atoi(line[2])
+		calories, _ := strconv.ParseFloat(line[2], 32)
 		quantity, _ := strconv.Atoi(line[3])
 		dryMultiplier, _ := strconv.ParseFloat(line[5], 32)
 		arr = append(arr, Input{
 			name:          line[0],
 			category:      line[1],
-			calories:      calories,
+			calories:      float32(calories),
 			quantity:      quantity,
 			unit:          line[4],
 			dryMultiplier: float32(dryMultiplier),
