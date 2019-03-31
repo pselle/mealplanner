@@ -23,9 +23,10 @@ type Input struct {
 	dryMultiplier float32
 }
 
-type meal struct {
-	base    string
-	filling string
+// Meal
+type Meal struct {
+	base    Input
+	filling Input
 	style   string
 }
 
@@ -74,12 +75,17 @@ func generateMeal(base Input, filling Input, multiplier float32, try int) (strin
 }
 func generateMeals() {
 	fmt.Println(fmt.Sprintf("gonna generate %d meals", mealCount))
-	// var meals []meal
-	var base = bases[rand.Intn(len(bases))]
-	var filling = fillings[rand.Intn(len(fillings))]
-	var meal, multiplier = generateMeal(base, filling, 1, 3)
-	fmt.Println(meal)
-	fmt.Printf(recipeLine, float32(base.quantity)*multiplier, base.unit, base.name, base.dryMultiplier*multiplier)
+	var mealSplits []int
+	mealSplits = splitMeals(mealSplits, mealCount)
+	for _, servings := range mealSplits {
+		var base = bases[rand.Intn(len(bases))]
+		var filling = fillings[rand.Intn(len(fillings))]
+		var meal, multiplier = generateMeal(base, filling, 1, 3)
+		// Multiply the meals by the servings
+		fmt.Printf("%d servings of...", servings)
+		fmt.Println(meal)
+		fmt.Printf(recipeLine, float32(base.quantity)*multiplier, base.unit, base.name, base.dryMultiplier*multiplier)
+	}
 }
 
 func loadData(arr []Input, fileName string) []Input {
@@ -120,6 +126,16 @@ func loadStyles(arr []string, fileName string) []string {
 		arr = append(arr, line[0])
 	}
 	return arr
+}
+
+func splitMeals(arr []int, count int) []int {
+	if count <= 3 {
+		return append(arr, count)
+	}
+	if count%3 > 0 {
+		return splitMeals(append(arr, 2), count-2)
+	}
+	return splitMeals(append(arr, 3), count-3)
 }
 
 const mealTitle = `
