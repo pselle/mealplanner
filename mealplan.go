@@ -5,6 +5,7 @@ import (
 	"encoding/csv"
 	"flag"
 	"fmt"
+	"html/template"
 	"io"
 	"log"
 	"math/rand"
@@ -15,19 +16,22 @@ import (
 
 // Input is an input in a recipe (basically an ingredient)
 type Input struct {
-	name          string
+	Name          string
 	category      string
 	calories      float32
 	quantity      int
-	unit          string
+	Unit          string
 	dryMultiplier float32
 }
 
-// Meal
+// Meal is a base and filling
 type Meal struct {
-	base    Input
-	filling Input
-	style   string
+	Base           Input
+	Filling        Input
+	Style          string
+	Servings       int
+	Calories       float32
+	baseMultiplier float32
 }
 
 var mealCount int
@@ -53,39 +57,48 @@ func main() {
 }
 
 // try is a var to prevent a stack overflow so that we only try 3 times before we give up
-func generateMeal(base Input, filling Input, multiplier float32, try int) (Meal, float32) {
+func generateMeal(base Input, filling Input, multiplier float32, try int) Meal {
 	if try == 0 {
-		return Meal{}, 1
+		return Meal{}
 	}
 	var mealCalories = base.calories*multiplier + filling.calories
-	log.Print(mealCalories)
 	if float32(mealLowerBound) < mealCalories && mealCalories < float32(mealUpperBound) {
-		log.Print("Found meal")
-		return Meal{base: base, filling: filling, style: styles[rand.Intn(len(styles))]}, multiplier
-		// return fmt.Sprintf(mealTitle, base.name, filling.name, styles[rand.Intn(len(styles))], 1), multiplier
+		return Meal{Base: base, Filling: filling, Style: styles[rand.Intn(len(styles))], baseMultiplier: multiplier}
 	}
 	if mealCalories < float32(mealUpperBound) {
 		return generateMeal(base, filling, multiplier+0.25, try-1)
 	}
 	if float32(mealLowerBound) < mealCalories {
-		log.Print("Decreasing base by 0.25")
-		log.Print(float32(base.calories)*multiplier + float32(filling.calories))
 		return generateMeal(base, filling, multiplier-0.25, try-1)
 	}
-	return Meal{}, multiplier
+	return Meal{}
 }
 func generateMeals() {
-	fmt.Println(fmt.Sprintf("gonna generate %d meals", mealCount))
+	fmt.Println(fmt.Sprintf("%d meals you say? How about you make:", mealCount))
+	var mealPlan []Meal
 	var mealSplits []int
 	mealSplits = splitMeals(mealSplits, mealCount)
 	for _, servings := range mealSplits {
 		var base = bases[rand.Intn(len(bases))]
 		var filling = fillings[rand.Intn(len(fillings))]
-		var meal, multiplier = generateMeal(base, filling, 1, 3)
-		// Multiply the meals by the servings
-		fmt.Printf("%d servings of...", servings)
-		fmt.Println(meal)
-		fmt.Printf(recipeLine, float32(base.quantity)*multiplier, base.unit, base.name, base.dryMultiplier*multiplier)
+		var meal = generateMeal(base, filling, 1, 3)
+		meal.Servings = servings
+		meal.Calories = meal.Base.calories*meal.baseMultiplier + meal.Filling.calories
+		mealPlan = append(mealPlan, meal)
+	}
+	funcMap := template.FuncMap{
+		"inc": func(i int) int {
+			return i + 1
+		},
+	}
+	tmpl, err := template.New("mealplan").Funcs(funcMap).Parse(mealPlanTemplate)
+	if err != nil {
+		panic(err)
+	}
+
+	err = tmpl.Execute(os.Stdout, mealPlan)
+	if err != nil {
+		panic(err)
 	}
 }
 
@@ -103,11 +116,11 @@ func loadData(arr []Input, fileName string) []Input {
 		quantity, _ := strconv.Atoi(line[3])
 		dryMultiplier, _ := strconv.ParseFloat(line[5], 32)
 		arr = append(arr, Input{
-			name:          line[0],
+			Name:          line[0],
 			category:      line[1],
 			calories:      float32(calories),
 			quantity:      quantity,
-			unit:          line[4],
+			Unit:          line[4],
 			dryMultiplier: float32(dryMultiplier),
 		})
 	}
@@ -139,14 +152,12 @@ func splitMeals(arr []int, count int) []int {
 	return splitMeals(append(arr, 3), count-3)
 }
 
-const mealTitle = `
-1. %s and %s, %s style, %d servings
-`
-
-// 1 cups brown rice, or .33 cup dry
-const recipeLine = `
-%.2f %s %s, or %.2f cup dry
-`
-const calCount = `
-%.2f calories per serving
+const mealPlanTemplate = `{{range $i, $m := .}}
+{{inc $i}}. {{$m.Base.Name}} and {{$m.Filling.Name}}, {{$m.Style}} style, {{$m.Servings}} servings{{end}}
+{{range $i, $m := .}}
+{{inc $i}}. {{$m.Base.Name}} and {{$m.Filling.Name}}, {{$m.Style}} style, {{$m.Servings}} servings
+{{$m.Base.Unit}} {{$m.Base.Name}}, or X {{$m.Base.Unit}} dry
+{{$m.Filling.Unit}} {{$m.Filling.Name}}, or X {{$m.Base.Unit}} dry
+{{$m.Calories}} calories per serving
+{{end}}
 `
