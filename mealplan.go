@@ -53,15 +53,16 @@ func main() {
 }
 
 // try is a var to prevent a stack overflow so that we only try 3 times before we give up
-func generateMeal(base Input, filling Input, multiplier float32, try int) (string, float32) {
+func generateMeal(base Input, filling Input, multiplier float32, try int) (Meal, float32) {
 	if try == 0 {
-		return "STOP", 1
+		return Meal{}, 1
 	}
 	var mealCalories = base.calories*multiplier + filling.calories
 	log.Print(mealCalories)
 	if float32(mealLowerBound) < mealCalories && mealCalories < float32(mealUpperBound) {
 		log.Print("Found meal")
-		return fmt.Sprintf(mealTitle, base.name, filling.name, styles[rand.Intn(len(styles))], 1), multiplier
+		return Meal{base: base, filling: filling, style: styles[rand.Intn(len(styles))]}, multiplier
+		// return fmt.Sprintf(mealTitle, base.name, filling.name, styles[rand.Intn(len(styles))], 1), multiplier
 	}
 	if mealCalories < float32(mealUpperBound) {
 		return generateMeal(base, filling, multiplier+0.25, try-1)
@@ -71,7 +72,7 @@ func generateMeal(base Input, filling Input, multiplier float32, try int) (strin
 		log.Print(float32(base.calories)*multiplier + float32(filling.calories))
 		return generateMeal(base, filling, multiplier-0.25, try-1)
 	}
-	return "yo", multiplier
+	return Meal{}, multiplier
 }
 func generateMeals() {
 	fmt.Println(fmt.Sprintf("gonna generate %d meals", mealCount))
