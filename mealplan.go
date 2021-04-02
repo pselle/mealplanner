@@ -19,9 +19,9 @@ type Input struct {
 	Name          string
 	category      string
 	calories      float32
-	quantity      int
+	Quantity      float32
 	Unit          string
-	dryMultiplier float32
+	DryMultiplier float32
 }
 
 // Meal is a base and filling
@@ -31,7 +31,7 @@ type Meal struct {
 	Style          string
 	Servings       int
 	Calories       float32
-	baseMultiplier float32
+	BaseMultiplier float32
 }
 
 var mealCount int
@@ -63,7 +63,7 @@ func generateMeal(base Input, filling Input, multiplier float32, try int) Meal {
 	}
 	var mealCalories = base.calories*multiplier + filling.calories
 	if float32(mealLowerBound) < mealCalories && mealCalories < float32(mealUpperBound) {
-		return Meal{Base: base, Filling: filling, Style: styles[rand.Intn(len(styles))], baseMultiplier: multiplier}
+		return Meal{Base: base, Filling: filling, Style: styles[rand.Intn(len(styles))], BaseMultiplier: multiplier}
 	}
 	if mealCalories < float32(mealUpperBound) {
 		return generateMeal(base, filling, multiplier+0.25, try-1)
@@ -83,12 +83,15 @@ func generateMeals() {
 		var filling = fillings[rand.Intn(len(fillings))]
 		var meal = generateMeal(base, filling, 1, 3)
 		meal.Servings = servings
-		meal.Calories = meal.Base.calories*meal.baseMultiplier + meal.Filling.calories
+		meal.Calories = meal.Base.calories*meal.BaseMultiplier + meal.Filling.calories
 		mealPlan = append(mealPlan, meal)
 	}
 	funcMap := template.FuncMap{
 		"inc": func(i int) int {
 			return i + 1
+		},
+		"multi": func(x float32, y float32) float32 {
+			return x * y
 		},
 	}
 	tmpl, err := template.New("mealplan").Funcs(funcMap).Parse(mealPlanTemplate)
@@ -113,15 +116,15 @@ func loadData(arr []Input, fileName string) []Input {
 			log.Fatal(err)
 		}
 		calories, _ := strconv.ParseFloat(line[2], 32)
-		quantity, _ := strconv.Atoi(line[3])
+		quantity, _ := strconv.ParseFloat(line[3], 32)
 		dryMultiplier, _ := strconv.ParseFloat(line[5], 32)
 		arr = append(arr, Input{
 			Name:          line[0],
 			category:      line[1],
 			calories:      float32(calories),
-			quantity:      quantity,
+			Quantity:      float32(quantity),
 			Unit:          line[4],
-			dryMultiplier: float32(dryMultiplier),
+			DryMultiplier: float32(dryMultiplier),
 		})
 	}
 	return arr
@@ -156,8 +159,8 @@ const mealPlanTemplate = `{{range $i, $m := .}}
 {{inc $i}}. {{$m.Base.Name}} and {{$m.Filling.Name}}, {{$m.Style}} style, {{$m.Servings}} servings{{end}}
 {{range $i, $m := .}}
 {{inc $i}}. {{$m.Base.Name}} and {{$m.Filling.Name}}, {{$m.Style}} style, {{$m.Servings}} servings
-{{$m.Base.Unit}} {{$m.Base.Name}}, or X {{$m.Base.Unit}} dry
-{{$m.Filling.Unit}} {{$m.Filling.Name}}, or X {{$m.Base.Unit}} dry
+{{multi $m.Base.Quantity $m.BaseMultiplier}} {{$m.Base.Unit}} {{$m.Base.Name}}, or {{multi $m.Base.DryMultiplier $m.BaseMultiplier}} {{$m.Base.Unit}} dry
+{{$m.Filling.Quantity}} {{$m.Filling.Unit}} {{$m.Filling.Name}}, or {{$m.Filling.DryMultiplier}} {{$m.Filling.Unit}} dry
 {{$m.Calories}} calories per serving
 {{end}}
 `
